@@ -1072,7 +1072,7 @@ async function generateAI() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        "model": `openai-fast`,
+        "model": `openai`,
         "response_format": {
           "type": "json_object"
         },
