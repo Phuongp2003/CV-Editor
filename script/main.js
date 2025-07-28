@@ -6,14 +6,73 @@ import {
   loadImageFromData,
   getImageData,
   initializeImageHandler,
-  hasImage
-} from './imageHandler.js';
+  hasImage,
+} from "./imageHandler.js";
 
 const maxCharacters = 260; // limit the number of characters
 const padding = 5;
 const inputEle = document.querySelector("#input");
 const AI_select = document.querySelector("#ai-select");
 const cover_letter = document.querySelector("#Cover-letter");
+
+let CV_obj = {
+  name: "",
+  email: "",
+  location: "",
+  linkedin: "",
+  github: "",
+  website: "",
+  summary: "",
+  experiences: [
+    {
+      position: "",
+      company: "",
+      location: "",
+      dates: "",
+      bullets: "",
+    },
+  ],
+  educations: [
+    {
+      university: "",
+      degree: "",
+      gpa: "",
+      graduationDate: "",
+    },
+  ],
+  projects: [
+    {
+      projectName: "",
+      projectLink: "",
+      bullets: "",
+    },
+  ],
+  skills: [
+    {
+      skill: "",
+      description: "",
+    },
+  ],
+};
+
+let CoverLetter_Obj = {
+  header: {
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    date: "",
+    recipientName: "",
+    recipientTitle: "",
+    companyName: "",
+    companyAddress: "",
+  },
+  greeting: "",
+  openingParagraph: "",
+  bodyParagraphs: [],
+  closingParagraph: "",
+  signOff: "",
+};
 
 function limitCharacters(input) {
   if (input.value.length > maxCharacters) {
@@ -173,14 +232,14 @@ function getPersonalInfoFromObj(obj) {
   if (obj.location) data.push(obj.location);
   if (obj.email) data.push(obj.email);
   if (obj.linkedin) data.push(obj.linkedin);
-  return data.join(' • ');
+  return data.join(" • ");
 }
 
 function getPersonalInfo2FromObj(obj) {
   const data = [];
   if (obj.github) data.push(obj.github);
   if (obj.website) data.push(obj.website);
-  return data.join(' • ');
+  return data.join(" • ");
 }
 
 function deleteBlock(btn, containerId) {
@@ -259,49 +318,9 @@ function addSkill() {
 function AutoUpdate() {
   // Update preview on any input
   const obj = getObject();
-  generatePDF(obj);
+  generatePDF(obj.cv);
 }
 AutoUpdate();
-
-let obj = {
-  name: "",
-  email: "",
-  location: "",
-  linkedin: "",
-  github: "",
-  website: "",
-  summary: "",
-  experiences: [
-    {
-      position: "",
-      company: "",
-      location: "",
-      dates: "",
-      bullets: "",
-    },
-  ],
-  educations: [
-    {
-      university: "",
-      degree: "",
-      gpa: "",
-      graduationDate: "",
-    },
-  ],
-  projects: [
-    {
-      projectName: "",
-      projectLink: "",
-      bullets: "",
-    },
-  ],
-  skills: [
-    {
-      skill: "",
-      description: "",
-    },
-  ],
-};
 
 function getObject() {
   const name = document.getElementById("name")?.value;
@@ -350,12 +369,28 @@ function getObject() {
     const graduationDate = fields[3].value;
     return { university, degree, gpa, graduationDate };
   });
-  
+
   // Get image data from ImageHandler module
   const imageData = getImageData();
-  
-  const obj = { name, email, location, linkedin, github, website, summary, experiences, projects, skills, educations, ...imageData };
-  console.log('get object', obj);
+
+  const obj = {
+    cv: {
+      name,
+      email,
+      location,
+      linkedin,
+      github,
+      website,
+      summary,
+      experiences,
+      projects,
+      skills,
+      educations,
+      ...imageData,
+    },
+    coverLetter: CoverLetter_Obj,
+  };
+  console.log("get object", obj);
   return obj;
 }
 
@@ -432,20 +467,20 @@ function generatePDF(obj, save = false) {
 
   // Add profile image if available - treated as absolute positioned element
   let headerStartY = y; // Save starting position for header
-  
+
   // Use ImageHandler module to add image to PDF
   const imageInfo = addImageToPDF(doc, marginLeft, y);
   const imageWidth = imageInfo.width;
   const imageHeight = imageInfo.height;
 
   // Personal Information - always centered on full page width (ignore image)
-  doc.setFont('NotoSans', 'bold');
+  doc.setFont("NotoSans", "bold");
   doc.setFontSize(16);
   const name = obj.name;
-  
+
   // Always center on full page width
-  doc.text(name || "Your Name", midPage, y, { align: 'center' });
-  
+  doc.text(name || "Your Name", midPage, y, { align: "center" });
+
   // Move to next line for personal info
   let personalInfoY = y + lineHeight + padding;
 
@@ -453,7 +488,7 @@ function generatePDF(obj, save = false) {
   doc.setFontSize(10);
   const personalInfo = getPersonalInfoFromObj(obj);
   const personalInfo2 = getPersonalInfo2FromObj(obj);
-  
+
   // Personal info always centered on full page width (ignore image)
   if (personalInfo) {
     const fullLength = doc.getStringUnitWidth(personalInfo) * 10;
@@ -468,30 +503,48 @@ function generatePDF(obj, save = false) {
     let content = location ? `${location}` : "";
     let temp = location ? `${location}` : "";
     let tempLength = doc.getStringUnitWidth(temp) * 10;
-    doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+    doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, {
+      align: "right",
+    });
 
     // email
     content = temp && email ? ` • ${email}` : email ? `${email}` : "";
     temp += temp && email ? ` • ${email}` : email ? `${email}` : "";
     tempLength = doc.getStringUnitWidth(temp) * 10;
-    doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+    doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, {
+      align: "right",
+    });
 
     // linkedin
     content =
       temp && linkedin ? ` • ${linkedin}` : linkedin ? `${linkedin}` : "";
     temp += temp && linkedin ? ` • ${linkedin}` : linkedin ? `${linkedin}` : "";
     tempLength = doc.getStringUnitWidth(temp) * 10;
-    if (content.includes('https://') || content.includes('www.')) {
-      doc.setTextColor('#115bca');
-      doc.setDrawColor('#115bca');
-      doc.textWithLink(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+    if (content.includes("https://") || content.includes("www.")) {
+      doc.setTextColor("#115bca");
+      doc.setDrawColor("#115bca");
+      doc.textWithLink(
+        content,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY,
+        { align: "right" }
+      );
       const textWidth = doc.getStringUnitWidth(linkedin) * 10;
-      doc.line(midPage - (fullLength / 2 - tempLength) - textWidth, personalInfoY, midPage - (fullLength / 2 - tempLength), personalInfoY);
-      doc.setTextColor('#000000');
-      doc.setDrawColor('#000000');
-    }
-    else
-      doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+      doc.line(
+        midPage - (fullLength / 2 - tempLength) - textWidth,
+        personalInfoY,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY
+      );
+      doc.setTextColor("#000000");
+      doc.setDrawColor("#000000");
+    } else
+      doc.text(
+        content,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY,
+        { align: "right" }
+      );
 
     console.log(fullLength - tempLength, fullLength, tempLength);
 
@@ -508,45 +561,77 @@ function generatePDF(obj, save = false) {
     let content = github ? `${github}` : "";
     let temp = github ? `${github}` : "";
     let tempLength = doc.getStringUnitWidth(temp) * 10;
-    if (content.includes('https://') || content.includes('www.')) {
-      doc.setTextColor('#115bca');
-      doc.setDrawColor('#115bca');
-      doc.textWithLink(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+    if (content.includes("https://") || content.includes("www.")) {
+      doc.setTextColor("#115bca");
+      doc.setDrawColor("#115bca");
+      doc.textWithLink(
+        content,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY,
+        { align: "right" }
+      );
       const textWidth = doc.getStringUnitWidth(github) * 10;
-      doc.line(midPage - (fullLength / 2 - tempLength) - textWidth, personalInfoY, midPage - (fullLength / 2 - tempLength), personalInfoY);
-      doc.setTextColor('#000000');
-      doc.setDrawColor('#000000');
-    }
-    else
-      doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+      doc.line(
+        midPage - (fullLength / 2 - tempLength) - textWidth,
+        personalInfoY,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY
+      );
+      doc.setTextColor("#000000");
+      doc.setDrawColor("#000000");
+    } else
+      doc.text(
+        content,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY,
+        { align: "right" }
+      );
 
     // website
     content = temp && website ? ` • ${website}` : website ? `${website}` : "";
     temp += temp && website ? ` • ${website}` : website ? `${website}` : "";
     tempLength = doc.getStringUnitWidth(temp) * 10;
-    if (content.includes('https://') || content.includes('www.')) {
-      doc.setTextColor('#115bca');
-      doc.setDrawColor('#115bca');
-      doc.textWithLink(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+    if (content.includes("https://") || content.includes("www.")) {
+      doc.setTextColor("#115bca");
+      doc.setDrawColor("#115bca");
+      doc.textWithLink(
+        content,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY,
+        { align: "right" }
+      );
       const textWidth = doc.getStringUnitWidth(website) * 10;
-      doc.line(midPage - (fullLength / 2 - tempLength) - textWidth, personalInfoY, midPage - (fullLength / 2 - tempLength), personalInfoY);
-      doc.setTextColor('#000000');
-      doc.setDrawColor('#000000');
-    }
-    else
-      doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, { align: 'right' });
+      doc.line(
+        midPage - (fullLength / 2 - tempLength) - textWidth,
+        personalInfoY,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY
+      );
+      doc.setTextColor("#000000");
+      doc.setDrawColor("#000000");
+    } else
+      doc.text(
+        content,
+        midPage - (fullLength / 2 - tempLength),
+        personalInfoY,
+        { align: "right" }
+      );
 
     personalInfoY += lineHeight + padding;
   }
-  
+
   // If no personal info was displayed, set personalInfoY to continue from name
   if (!personalInfo && !personalInfo2) {
     personalInfoY = headerStartY + lineHeight + padding;
   }
-  
+
   // Set y position to continue below the header (image + personal info)
   if (hasImage()) {
-    const imageBottom = getImageBottomPosition(headerStartY, imageHeight, padding);
+    const imageBottom = getImageBottomPosition(
+      headerStartY,
+      imageHeight,
+      padding
+    );
     y = Math.max(personalInfoY, imageBottom);
   } else {
     y = personalInfoY;
@@ -566,12 +651,15 @@ function generatePDF(obj, save = false) {
     doc.setFont("NotoSans", "normal");
     doc.setFontSize(10);
     const summaryLines = doc.splitTextToSize(summary, 500);
-    doc.text(summary, marginLeft, y, {align: "justify", maxWidth: 500, lineHeightFactor: 1.5});
+    doc.text(summary, marginLeft, y, {
+      align: "justify",
+      maxWidth: 500,
+      lineHeightFactor: 1.5,
+    });
     for (let i = 0; i < summaryLines.length; i++) {
       // doc.text(summaryLines[i], marginLeft, y, {align: "justify", maxWidth: 500});
       y += lineHeight;
-      if (i == summaryLines.length - 1)
-        y += 5;
+      if (i == summaryLines.length - 1) y += 5;
       checkAndAddPage();
     }
     // console.log(summaryLines)
@@ -701,10 +789,8 @@ function generatePDF(obj, save = false) {
           if (bullet.trim()) {
             const bulletLines = doc.splitTextToSize(bullet.trim(), 500);
             for (let i = 0; i < bulletLines.length; i++) {
-              if (i == 0)
-                doc.text("•      " + bulletLines[i], marginLeft, y);
-              else
-                doc.text("        " + bulletLines[i], marginLeft, y);
+              if (i == 0) doc.text("•      " + bulletLines[i], marginLeft, y);
+              else doc.text("        " + bulletLines[i], marginLeft, y);
               if (index != bullets.length) {
                 y += lineHeight;
                 checkAndAddPage();
@@ -759,12 +845,18 @@ function generatePDF(obj, save = false) {
           ) {
             y += lineHeight;
             checkAndAddPage();
-            doc.setTextColor('#115bca');
-            doc.setDrawColor('#115bca');
-            const projectLinkLines = doc.splitTextToSize(projectLink.trim(), 520);
+            doc.setTextColor("#115bca");
+            doc.setDrawColor("#115bca");
+            const projectLinkLines = doc.splitTextToSize(
+              projectLink.trim(),
+              520
+            );
             for (let i = 0; i < projectLinkLines.length; i++) {
-              doc.textWithLink(projectLinkLines[i], marginLeft, y, { align: 'left' });
-              const textWidth = doc.getStringUnitWidth(projectLinkLines[i]) * 10;
+              doc.textWithLink(projectLinkLines[i], marginLeft, y, {
+                align: "left",
+              });
+              const textWidth =
+                doc.getStringUnitWidth(projectLinkLines[i]) * 10;
               doc.line(marginLeft, y, marginLeft + textWidth, y);
               if (i != projectLinkLines.length - 1) {
                 y += lineHeight;
@@ -776,9 +868,12 @@ function generatePDF(obj, save = false) {
           } else {
             y += lineHeight;
             checkAndAddPage();
-            const projectLinkLines = doc.splitTextToSize(projectLink.trim(), 520);
+            const projectLinkLines = doc.splitTextToSize(
+              projectLink.trim(),
+              520
+            );
             for (let i = 0; i < projectLinkLines.length; i++) {
-              doc.text(projectLinkLines[i], marginLeft, y, { align: 'left' });
+              doc.text(projectLinkLines[i], marginLeft, y, { align: "left" });
               if (i != projectLinkLines.length - 1) {
                 y += lineHeight;
                 checkAndAddPage();
@@ -797,10 +892,8 @@ function generatePDF(obj, save = false) {
           if (bullet.trim()) {
             const bulletLines = doc.splitTextToSize(bullet.trim(), 500);
             for (let i = 0; i < bulletLines.length; i++) {
-              if (i == 0)
-                doc.text("•      " + bulletLines[i], marginLeft, y);
-              else
-                doc.text("        " + bulletLines[i], marginLeft, y);
+              if (i == 0) doc.text("•      " + bulletLines[i], marginLeft, y);
+              else doc.text("        " + bulletLines[i], marginLeft, y);
               if (index != bullets.length) {
                 y += lineHeight;
                 checkAndAddPage();
@@ -893,19 +986,19 @@ function generatePDF(obj, save = false) {
 
 function downloadPDF() {
   const obj = getObject();
-  generatePDF(obj, true);
+  generatePDF(obj.cv, true);
 }
 
 function loadHtml(obj) {
   // const obj = getObject()
-  document.getElementById('name').value = obj.name;
-  document.getElementById('email').value = obj.email;
-  document.getElementById('location').value = obj.location;
-  document.getElementById('linkedin').value = obj.linkedin;
-  document.getElementById('github').value = obj.github;
-  document.getElementById('website').value = obj.website;
-  document.getElementById('summary').value = obj.summary;
-  
+  document.getElementById("name").value = obj.name;
+  document.getElementById("email").value = obj.email;
+  document.getElementById("location").value = obj.location;
+  document.getElementById("linkedin").value = obj.linkedin;
+  document.getElementById("github").value = obj.github;
+  document.getElementById("website").value = obj.website;
+  document.getElementById("summary").value = obj.summary;
+
   // Load profile image using ImageHandler module
   loadImageFromData(obj);
 
@@ -1032,7 +1125,7 @@ function loadHtml(obj) {
       document.getElementById("education-fields").appendChild(newEntry);
     }
   });
-  
+
   // Update preview after loading data
   AutoUpdate();
 }
@@ -1047,7 +1140,8 @@ inputEle.onchange = async function () {
     return;
   }
   const obj = JSON.parse(await inputEle.files[0].text());
-  loadHtml(obj);
+  loadHtml(obj.cv);
+  loadCoverLetter(obj.coverLetter);
   // generatePDF will be called by AutoUpdate in loadHtml
   console.log(obj);
 };
@@ -1070,21 +1164,33 @@ initializeImageHandler();
 // Initialize all event listeners for buttons
 function initializeEventListeners() {
   // Main action buttons
-  document.getElementById('update-btn')?.addEventListener('click', AutoUpdate);
-  document.getElementById('download-pdf-btn')?.addEventListener('click', downloadPDF);
-  document.getElementById('download-json-btn')?.addEventListener('click', downloadJson);
-  document.getElementById('generate-ai-btn')?.addEventListener('click', generateAI);
-  
+  document.getElementById("update-btn")?.addEventListener("click", AutoUpdate);
+  document
+    .getElementById("download-pdf-btn")
+    ?.addEventListener("click", downloadPDF);
+  document
+    .getElementById("download-json-btn")
+    ?.addEventListener("click", downloadJson);
+  document
+    .getElementById("generate-ai-btn")
+    ?.addEventListener("click", generateAI);
+
   // Add section buttons
-  document.getElementById('add-skill-btn')?.addEventListener('click', addSkill);
-  document.getElementById('add-experience-btn')?.addEventListener('click', addExperience);
-  document.getElementById('add-project-btn')?.addEventListener('click', addProject);
-  document.getElementById('add-education-btn')?.addEventListener('click', addEducation);
-  
+  document.getElementById("add-skill-btn")?.addEventListener("click", addSkill);
+  document
+    .getElementById("add-experience-btn")
+    ?.addEventListener("click", addExperience);
+  document
+    .getElementById("add-project-btn")
+    ?.addEventListener("click", addProject);
+  document
+    .getElementById("add-education-btn")
+    ?.addEventListener("click", addEducation);
+
   // Delete buttons event delegation
-  document.body.addEventListener('click', function(e) {
-    if (e.target.classList.contains('delete-btn')) {
-      const container = e.target.getAttribute('data-container');
+  document.body.addEventListener("click", function (e) {
+    if (e.target.classList.contains("delete-btn")) {
+      const container = e.target.getAttribute("data-container");
       deleteBlock(e.target, container);
     }
   });
@@ -1093,7 +1199,9 @@ function initializeEventListeners() {
 // Initialize event listeners when DOM is loaded
 initializeEventListeners();
 
-const INSprompt = `Instruction Prompt:
+const INSprompt = `
+1. Goal Statement
+I need you to generate both a tailored CV and a cover letter in response to a job description and (optional) user-provided information. The output must:
 
 Be in JSON format matching the schema below.
 
@@ -1172,52 +1280,93 @@ Please return a single JSON object with the following structure. Every text fiel
   }
 }
 3. Warnings & Requirements
-For both CV and Cover Letter:
-Use realistic, natural-sounding phrasing in the target language.
+CV:
+summary: Only include if strongly aligned with the job.
 
-Avoid filler or clichés; focus on clear, impactful, context-appropriate writing.
+experiences[].bullets: Start with strong past-tense action verbs.
 
-Do not fabricate irrelevant fluff; enrich only with plausible, aligned details.
+projects: Only include real, meaningful projects (no tutorials or academic assignments unless notable).
 
-Leave fields blank if data is not provided and cannot be inferred.
+skills: Group related skills clearly; include a brief, useful description (not exhaustive lists).
 
-For CV:
-Only include "summary" if it directly connects with the job.
+Integrate keywords naturally from the job description.
 
-Use strong past-tense action verbs to start experience/project bullets.
+Omit GPA if not provided or if weak.
 
-Integrate technologies and keywords from the job description organically.
+Make all entries concise and results-driven.
 
-Ensure concise, recruiter-friendly formatting.
+Good vs. Bad Examples (CV)
+Good summary:
+“Software Engineer with 6+ years of experience in scalable e-commerce systems using Ruby on Rails and PostgreSQL.”
+Bad summary:
+“Passionate software developer seeking challenges.”
 
-No GPA unless it's provided and strong.
+Good experience bullet:
+“Led migration from monolith to microservices, reducing server load by 42%.”
+Bad bullet:
+“Improved system performance.”
 
-No tutorial/sample projects—only significant, real ones.
+Good project:
+"projectName": "Real-Time Chat App", "bullets": ["Built an encrypted WebSocket server handling 500+ concurrent users."]
+Bad project:
+"projectName": "Chat tutorial", "bullets": ["Learned how to build a chat."]
 
-Group skills meaningfully; do not list generic languages endlessly.
+Good skill section:
+"skill": "Backend", "description": "Node.js, Express, Fastify"
+Bad:
+"skill": "Languages", "description": "C, C++, Java, Kotlin, Swift, Haskell, Go, Python, Ruby, ..."
 
-For Cover Letter:
-Follow a standard structure:
+Cover Letter:
+Follow this structure:
 
-Header (contact info, date, recipient, company)
+Header (personal and company info)
 
 Greeting (personalized if possible)
 
-Opening Paragraph (interest in role & company)
+Opening paragraph: Introduce yourself, state the job you're applying for, and why you're interested
 
-Body Paragraph(s) (highlight achievements relevant to the job)
+Body paragraph(s): Highlight relevant achievements, qualifications, or transferable skills
 
-Closing Paragraph (reaffirm interest & value)
+Closing paragraph: Reaffirm interest, availability, and gratitude
 
-Sign-off
+Sign-off (e.g., “Sincerely,”)
 
-Reference the job title and company explicitly.
+Match tone to the company culture (formal or slightly conversational).
 
-Personalize where possible using job/company insights.
+Include specific, relevant experiences (not generic traits).
 
-Ensure tone is enthusiastic, confident, and professional.
+Keep the letter within 300-350 words max.
 
-Avoid repeating CV verbatim—expand or add narrative where helpful.
+Tailor to the company and role—don't copy the resume.
+
+Good vs. Bad Examples (Cover Letter)
+Good opening:
+“I'm excited to apply for the Frontend Engineer role at SmartTech. As a React developer who recently improved load time by 60% on a similar product, I believe I can immediately contribute to your user experience goals.”
+Bad:
+“To whom it may concern, I am applying for a job at your company because I am looking for a new challenge.”
+
+Good body paragraph:
+“While leading the redesign of our e-commerce checkout flow, I collaborated with design and backend teams to launch a responsive interface that increased conversion rates by 32%.”
+Bad:
+“I work well in teams and am good at solving problems.”
+
+Translation Requirements
+Translate all output fields into the target language. The tone must remain professional, natural, and native-sounding. Do not translate literally. Prioritize readability and local fluency over word-for-word accuracy.
+Good vs. Bad Translations (Example: English → Vietnamese - (for illustration only))
+Good Summary Translation:
+“Kỹ sư phần mềm với 6 năm kinh nghiệm full-stack chuyên về Ruby on Rails và hệ thống thương mại điện tử.”
+Bad Summary Translation:
+“Lập trình viên phần mềm đam mê tìm kiếm thử thách mới.”
+
+Good Name Translation:
+“Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh”
+Bad Name Translation:
+“Đại học Công nghệ và Giáo dục Hồ Chí Minh”
+
+Good Cover Letter Greeting Translation:
+"Kính gửi Nhà tuyển dụng,"
+Bad Cover Letter Greeting Translation:
+"Kính gửi Người tuyển dụng," or "Dear Người nhận,"
 
 4. Context
 You will receive a JSON input structured like this:
@@ -1226,12 +1375,13 @@ You will receive a JSON input structured like this:
   "Job-description": "<full job posting>",
   "user-information": "<optional CV-like content or freeform text>",
   "language": "<language code, e.g., 'english', 'vietnamese'>"
+  "today": "<date string for today>"
 }
 Please:
 
 Translate all generated content (CV + cover letter) into the specified language.
 
-Invent or infer realistic details only if the user's data is missing or insufficient.
+Invent or infer realistic details only if the user’s data is missing or insufficient.
 
 Prioritize relevance, clarity, and ATS optimization.
 
@@ -1250,46 +1400,51 @@ async function generateAI() {
     return;
   }
   try {
-    aiLoader.classList.replace('hidden', 'flex');
-    const res = await fetch('https://text.pollinations.ai', {
-      method: 'POST',
+    aiLoader.classList.replace("hidden", "flex");
+    const res = await fetch("https://text.pollinations.ai", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        "model": `openai`,
-        "response_format": {
-          "type": "json_object"
+        model: `openai`,
+        response_format: {
+          type: "json_object",
         },
-        "private": true,
-        "reasoning_effort": "medium",
-        "messages": [
+        private: true,
+        reasoning_effort: "medium",
+        messages: [
           {
-            "role": "developer",
-            "content": INSprompt
+            role: "developer",
+            content: INSprompt,
           },
           {
             role: "user",
             content: JSON.stringify({
               "Job-description": JD,
               "user-information": yourself,
-              language: language,
+              "language": language,
+              "today": new Date().toDateString(),
             }),
           },
         ],
-      })
+      }),
     });
     const json = await res.json();
     // console.log(typeof(json))
     const cv = json.cv;
     const coverLetter = json.coverLetter;
+    if (coverLetter) {
+      CoverLetter_Obj = coverLetter;
+    }
     cv.experiences.map((value, index) => {
       // let ex_temp = ''
       // json.experiences[index]['bullets'].map((value2, index2) => {
       //   ex_temp += value2 + '\n'
       // })
       // json.experiences[index]['bullets'] = ex_temp
-      cv.experiences[index]['bullets'] = cv.experiences[index]['bullets'].join('\n');
+      cv.experiences[index]["bullets"] =
+        cv.experiences[index]["bullets"].join("\n");
     });
     cv.projects.map((value, index) => {
       // let pr_temp = ''
@@ -1297,7 +1452,7 @@ async function generateAI() {
       //   pr_temp += value2 + '\n'
       // })
       // json.projects[index]['bullets'] = pr_temp
-      cv.projects[index]['bullets'] = cv.projects[index]['bullets'].join('\n');
+      cv.projects[index]["bullets"] = cv.projects[index]["bullets"].join("\n");
     });
     console.log(json);
     loadHtml(cv);
@@ -1343,9 +1498,7 @@ function loadCoverLetter(coverLetter) {
     header.phone,
     header.email,
     header.date,
-    header.recipientName
-      ? `Dear ${header.recipientName},`
-      : greeting || "Dear Hiring Manager,",
+    greeting,
   ];
 
   // Format body paragraphs with line breaks between each
