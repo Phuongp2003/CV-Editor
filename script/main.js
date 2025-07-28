@@ -1251,22 +1251,21 @@ async function generateAI() {
   }
   try {
     aiLoader.classList.replace('hidden', 'flex');
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const res = await fetch('https://text.pollinations.ai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer LOOK FOR KEY IN key.txt`
       },
       body: JSON.stringify({
-        "model": `deepseek/deepseek-chat-v3-0324:free`,
+        "model": `openai`,
         "response_format": {
           "type": "json_object"
         },
-        // "private": true,
-        // "reasoning_effort": "medium",
+        "private": true,
+        "reasoning_effort": "medium",
         "messages": [
           {
-            "role": "system",
+            "role": "developer",
             "content": INSprompt
           },
           {
@@ -1280,7 +1279,7 @@ async function generateAI() {
         ],
       })
     });
-    const json = await res.json().then(res => JSON.parse(res.choices[0].message.content));
+    const json = await res.json();
     // console.log(typeof(json))
     const cv = json.cv;
     const coverLetter = json.coverLetter;
