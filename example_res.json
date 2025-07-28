@@ -1,0 +1,82 @@
+{
+    "cv": {
+        "name": "Vuong Dinh Quy",
+        "email": "vuongquy51@gmail.com",
+        "location": "Ho Chi Minh City",
+        "linkedin": "www.linkedin.com/in/vương-đình-quý-224595356",
+        "github": "https://github.com/sjnosukequy",
+        "website": "",
+        "summary": "Motivated IT student eager to apply programming and soft skills through practical experience. Seeking to leverage training in software development and a hands-on internship to thrive in a fresh environment.",
+        "experiences": [
+            {
+                "position": "Business Analyst Intern",
+                "company": "Primas Group",
+                "location": "Ho Chi Minh City",
+                "dates": "July 2024 - May 2025",
+                "bullets": "Conducted research on competitor products to identify key features for future releases.\nCollaborated with developers to ensure precise implementation, improving user experience.\nSupported requirements analysis and documentation for application updates."
+            },
+            {
+                "position": "Teaching Assistant (Volunteer)",
+                "company": "Stanford University's Code in Place",
+                "location": "Remote",
+                "dates": "April 2025 – June 2025",
+                "bullets": "Assisted students with understanding programming fundamentals and assignments.\nProvided guidance on Python coding best practices."
+            }
+        ],
+        "educations": [
+            {
+                "university": "Ho Chi Minh City University of Technology and Education",
+                "degree": "Information Technology Engineer",
+                "gpa": "3.64/4",
+                "graduationDate": "July 2025 (Expected)"
+            }
+        ],
+        "projects": [
+            {
+                "projectName": "Coffee Warehouse Management Website with AI-Driven Coffee Price Forecasting",
+                "projectLink": "https://github.com/sjnosukequy/COFFE_PREDICT",
+                "bullets": "Developed AI models for coffee price prediction and integrated them into the warehouse management system.\nImplemented data crawling pipelines to feed forecasting models.\nDesigned chatbot for coffee-specific queries and contributed to frontend/backend tasks using Next.js, FastAPI, and Clean Architecture."
+            },
+            {
+                "projectName": "NutriAI Planner: AI-Powered Nutrition & Meal Planner App",
+                "projectLink": "https://landing-page-nutrient-app.vercel.app/",
+                "bullets": "Built personalized AI recommendation and suggestion engine leveraging Gemini and pgvector.\nEngineered vector search and backend logic, handled data crawling and database design.\nDeveloped mobile and web UI features with React Native and Next.js for calorie tracking and meal planning."
+            }
+        ],
+        "skills": [
+            {
+                "skill": "Software Development",
+                "description": "Proficient in Python, Next.js, and React Native with practical experience in developing applications."
+            },
+            {
+                "skill": "Data Management",
+                "description": "Skilled in designing databases and implementing data pipelines for AI models."
+            },
+            {
+                "skill": "Team Collaboration",
+                "description": "Effective communicator experienced in working with cross-functional teams to achieve project objectives."
+            }
+        ]
+    },
+    "coverLetter": {
+        "header": {
+            "name": "Vuong Dinh Quy",
+            "email": "vuongquy51@gmail.com",
+            "phone": "",
+            "location": "Ho Chi Minh City",
+            "date": "October 3, 2023",
+            "recipientName": "",
+            "recipientTitle": "",
+            "companyName": "SystemEXE",
+            "companyAddress": "Tầng 2, Tòa nhà Etown1 - Số 364 Cộng Hòa, Phường Tân Bình, TP.HCM"
+        },
+        "greeting": "Dear Hiring Manager,",
+        "openingParagraph": "I am excited to apply for the Fresher Program at SystemEXE as I believe it offers a unique opportunity to enhance my skills in programming and project management while contributing to your innovative team.",
+        "bodyParagraphs": [
+            "As a current IT student at Ho Chi Minh City University of Technology and Education, I have developed a strong foundation in software development through various projects and internships. My recent experience as a Business Analyst Intern at Primas Group has equipped me with valuable skills in collaborating with developers and understanding user needs, which I believe aligns perfectly with SystemEXE's focus on practical training and soft skills development.",
+            "Additionally, my role as a Teaching Assistant with Stanford University's Code in Place has strengthened my ability to communicate complex concepts effectively, a skill I deem essential for the collaborative environment at SystemEXE. I am particularly drawn to your emphasis on hands-on experience and mentorship, as I thrive in learning settings that encourage proactive engagement."
+        ],
+        "closingParagraph": "I am eager to bring my enthusiasm for programming and motivation to learn to SystemEXE. I am confident that this Fresher Program will be a significant step in my career development. Thank you for considering my application.",
+        "signOff": "Sincerely,\nVuong Dinh Quy"
+    }
+}
