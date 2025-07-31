@@ -1383,64 +1383,61 @@ function initializeEventListeners() {
 initializeEventListeners();
 
 const INSprompt = `
+
 1. Goal Statement
 I need you to generate both a tailored CV and a cover letter in response to a job description and (optional) user-provided information. The output must:
 
-Be in JSON format matching the schema below.
-
-Translate all fields into the specified language, using natural, real-life phrasing and tone appropriate to professional job applications.
+- Be in JSON format matching the schema below
+- Use natural, real-life phrasing and tone appropriate for professional job applications
+- Translate all fields into the specified language—except if the specified language is English (case-insensitive), in which case the output must remain fully in English
 
 The cover letter should:
-
-Be role-specific and company-aware.
-
-Highlight relevant experience, skills, and achievements aligned with the job description.
-
-Follow a standard business letter structure (header, greeting, intro, body, closing, sign-off).
-
-Sound authentic, enthusiastic, and tailored to the job.
+- Be role-specific and company-aware
+- Highlight relevant experience, skills, and achievements aligned with the job description
+- Follow standard cover letter structure: header, greeting, intro, body, closing, and sign-off
+- Sound authentic, enthusiastic, and tailored to the job
 
 2. Return Format
-Please return a single JSON object with the following structure. Every text field must be in the requested language:
+Return a single JSON object with the following structure. Every text field must be in the requested language (unless the language is English—then keep in English):
 
 {
   "cv": {
-    "name": "",  
-    "email": "",  
-    "location": "",  
-    "linkedin": "",  
-    "github": "",  
-    "website": "",  
-    "summary": "",  
-    "experiences": [  
-      {  
-        "position": "",  
-        "company": "",  
-        "location": "",  
-        "dates": "",  
-        "bullets": []  
-      }  
-    ],  
-    "educations": [  
-      {  
-        "university": "",  
-        "degree": "",  
-        "gpa": "",  
-        "graduationDate": ""  
-      }  
-    ],  
-    "projects": [  
-      {  
-        "projectName": "",  
-        "projectLink": "",  
-        "bullets": []  
-      }  
-    ],  
-    "skills": [  
-      {  
-        "skill": "",  
-        "description": ""  
-      }  
+    "name": "",
+    "email": "",
+    "location": "",
+    "linkedin": "",
+    "github": "",
+    "website": "",
+    "summary": "",
+    "experiences": [
+      {
+        "position": "",
+        "company": "",
+        "location": "",
+        "dates": "",
+        "bullets": []
+      }
+    ],
+    "educations": [
+      {
+        "university": "",
+        "degree": "",
+        "gpa": "",
+        "graduationDate": ""
+      }
+    ],
+    "projects": [
+      {
+        "projectName": "",
+        "projectLink": "",
+        "bullets": []
+      }
+    ],
+    "skills": [
+      {
+        "skill": "",
+        "description": ""
+      }
     ]
   },
   "coverLetter": {
@@ -1462,113 +1459,80 @@ Please return a single JSON object with the following structure. Every text fiel
     "signOff": ""
   }
 }
+
 3. Warnings & Requirements
+
 CV:
-summary: Only include if strongly aligned with the job.
-
-experiences[].bullets: Start with strong past-tense action verbs.
-
-projects: Only include real, meaningful projects (no tutorials or academic assignments unless notable).
-
-skills: Group related skills clearly; include a brief, useful description (not exhaustive lists).
-
-Integrate keywords naturally from the job description.
-
-Omit GPA if not provided or if weak.
-
-Make all entries concise and results-driven.
-
-Good vs. Bad Examples (CV)
-Good summary:
-“Software Engineer with 6+ years of experience in scalable e-commerce systems using Ruby on Rails and PostgreSQL.”
-Bad summary:
-“Passionate software developer seeking challenges.”
-
-Good experience bullet:
-“Led migration from monolith to microservices, reducing server load by 42%.”
-Bad bullet:
-“Improved system performance.”
-
-Good project:
-"projectName": "Real-Time Chat App", "bullets": ["Built an encrypted WebSocket server handling 500+ concurrent users."]
-Bad project:
-"projectName": "Chat tutorial", "bullets": ["Learned how to build a chat."]
-
-Good skill section:
-"skill": "Backend", "description": "Node.js, Express, Fastify"
-Bad:
-"skill": "Languages", "description": "C, C++, Java, Kotlin, Swift, Haskell, Go, Python, Ruby, ..."
+- Use strong, past-tense action verbs in experience bullets.
+- Do not include GPA unless it's provided and strong.
+- Only include real, significant projects. No tutorial or toy examples.
+- Skills must be grouped clearly and described briefly.
+- Use realistic and results-focused phrasing.
+- Integrate keywords from the job description naturally.
 
 Cover Letter:
-Follow this structure:
+- Keep tone confident, clear, and job-specific.
+- Avoid repeating the CV. Expand and add personality.
+- Structure the letter with: Header, Greeting, Opening, Body, Closing, Sign-off.
+- Personalize the greeting when possible.
+- Do not use generic phrases like "To whom it may concern."
+- Keep the letter under 350 words.
+- If the specified language is English, do not translate the cover letter or CV. Otherwise, ensure the entire cover letter and CV are translated into the target language fluently.
 
-Header (personal and company info)
+Examples of Good vs. Bad Content (CV):
+Good summary: “Software Engineer with 6+ years of experience in scalable e-commerce systems using Ruby on Rails and PostgreSQL.”
+Bad summary: “Passionate software developer seeking challenges.”
 
-Greeting (personalized if possible)
+Good experience bullet: “Led migration from monolith to microservices, reducing server load by 42%.”
+Bad bullet: “Improved system performance.”
 
-Opening paragraph: Introduce yourself, state the job you're applying for, and why you're interested
+Good project: “Built encrypted WebSocket server handling 500+ concurrent users.”
+Bad project: “Chat tutorial project.”
 
-Body paragraph(s): Highlight relevant achievements, qualifications, or transferable skills
+Good skill description: “Backend: Node.js, Express, Fastify”
+Bad skill description: “C, C++, Java, Kotlin, Swift, Haskell, Go, Python, Ruby, …”
 
-Closing paragraph: Reaffirm interest, availability, and gratitude
+Examples of Good vs. Bad Content (Cover Letter):
+Good opening: “I’m excited to apply for the Frontend Engineer role at SmartTech. As a React developer who recently improved load time by 60%, I believe I can immediately contribute to your user experience goals.”
+Bad opening: “To whom it may concern, I am applying for a job at your company because I am looking for a new challenge.”
 
-Sign-off (e.g., “Sincerely,”)
+Good body: “While leading the redesign of our e-commerce checkout flow, I collaborated with backend and design teams and improved conversion rates by 32%.”
+Bad body: “I work well in teams and am good at solving problems.”
 
-Match tone to the company culture (formal or slightly conversational).
+4. Translation Guidance
 
-Include specific, relevant experiences (not generic traits).
+If the input language is English, do not translate any output. Leave all content in English.
+If the input language is anything other than English, translate all fields fully and fluently.
+Use natural, native-level phrasing. Do not translate literally or mechanically.
 
-Keep the letter within 300-350 words max.
+Examples of Good vs. Bad Vietnamese Translations:
 
-Tailor to the company and role—don't copy the resume.
+Good summary: “Kỹ sư phần mềm với 6 năm kinh nghiệm full-stack chuyên về Ruby on Rails và hệ thống thương mại điện tử.”
+Bad summary: “Lập trình viên phần mềm đam mê tìm kiếm thử thách mới.”
 
-Good vs. Bad Examples (Cover Letter)
-Good opening:
-“I'm excited to apply for the Frontend Engineer role at SmartTech. As a React developer who recently improved load time by 60% on a similar product, I believe I can immediately contribute to your user experience goals.”
-Bad:
-“To whom it may concern, I am applying for a job at your company because I am looking for a new challenge.”
+Good university name: “Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh”
+Bad university name: “Đại học Công nghệ và Giáo dục Hồ Chí Minh”
 
-Good body paragraph:
-“While leading the redesign of our e-commerce checkout flow, I collaborated with design and backend teams to launch a responsive interface that increased conversion rates by 32%.”
-Bad:
-“I work well in teams and am good at solving problems.”
+Good greeting: “Kính gửi Nhà tuyển dụng,”
+Bad greeting: “Kính gửi Người tuyển dụng,” or “Dear Người nhận,”
 
-Translation Requirements
-Translate all output fields into the target language. The tone must remain professional, natural, and native-sounding. Do not translate literally. Prioritize readability and local fluency over word-for-word accuracy.
-Good vs. Bad Translations (Example: English → Vietnamese - (for illustration only))
-Good Summary Translation:
-“Kỹ sư phần mềm với 6 năm kinh nghiệm full-stack chuyên về Ruby on Rails và hệ thống thương mại điện tử.”
-Bad Summary Translation:
-“Lập trình viên phần mềm đam mê tìm kiếm thử thách mới.”
+5. Context
 
-Good Name Translation:
-“Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh”
-Bad Name Translation:
-“Đại học Công nghệ và Giáo dục Hồ Chí Minh”
-
-Good Cover Letter Greeting Translation:
-"Kính gửi Nhà tuyển dụng,"
-Bad Cover Letter Greeting Translation:
-"Kính gửi Người tuyển dụng," or "Dear Người nhận,"
-
-4. Context
-You will receive a JSON input structured like this:
+You will receive input in the following format:
 
 {
   "Job-description": "<full job posting>",
-  "user-information": "<optional CV-like content or freeform text>",
-  "language": "<language code, e.g., 'english', 'vietnamese'>"
-  "today": "<date string for today>"
+  "user-information": "<optional CV or cover letter content>",
+  "language": "<language code, e.g., 'english', 'vietnamese'>",
+  "today": "<date string>"
 }
-Please:
 
-Translate all generated content (CV + cover letter) into the specified language.
+Instructions:
+- Translate all fields based on the specified language.
+- If language is English, output all content in English without translation.
+- If input data is limited, you may infer or enrich missing content realistically.
+- Prioritize clarity, keyword alignment, and professional fluency.
 
-Invent or infer realistic details only if the user’s data is missing or insufficient.
-
-Prioritize relevance, clarity, and ATS optimization.
-
-Ensure cover letter does not exceed 350 words unless the job clearly favors a detailed narrative.
 `;
 
 async function generateAI() {
