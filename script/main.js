@@ -1643,12 +1643,11 @@ async function generateAI() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: `openai`,
+        model: `openai-large`,
         response_format: {
           type: "json_object",
         },
         private: true,
-        reasoning_effort: "medium",
         messages: [
           {
             role: "developer",
