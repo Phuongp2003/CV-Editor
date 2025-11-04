@@ -18,6 +18,8 @@ import {
   deleteProfile
 } from "./personalProfileHandler.js"
 
+import HideShowKey from "./hideShowKey.js";
+
 const maxCharacters = 260; // limit the number of characters
 const padding = 5;
 const inputEle = document.querySelector("#input");
@@ -26,9 +28,18 @@ const cover_letter = document.querySelector("#Cover-letter");
 let GEMINI_API_KEY = "";
 const apiKeyInput = document.getElementById("api-key");
 const saveApiKeyBtn = document.getElementById("save-api-key");
+const apiEyeDiv = document.getElementById("api-eye-div");
+const languageSelect = document.getElementById("language");
+
 
 // Load saved API key from localStorage if available
 GEMINI_API_KEY = localStorage.getItem("gemini_api_key");
+if (GEMINI_API_KEY) {
+  apiKeyInput.value = GEMINI_API_KEY;
+}
+
+// Initialize HideShowKey functionality
+new HideShowKey(apiEyeDiv, apiKeyInput);
 
 saveApiKeyBtn.addEventListener("click", () => {
   GEMINI_API_KEY = apiKeyInput.value;
@@ -74,6 +85,13 @@ let CV_obj = {
       description: "",
     },
   ],
+  certificates: [
+    {
+      certName: "",
+      "issuer/description": "",
+      certDate: "",
+    },
+  ],
 };
 
 let CoverLetter_Obj = {
@@ -99,128 +117,6 @@ function limitCharacters(input) {
   if (input.value.length > maxCharacters) {
     input.value = input.value.slice(0, maxCharacters);
   }
-}
-
-function updatePreview() {
-  const preview = document.getElementById("cv-preview");
-  preview.innerHTML = `
-      <!-- Personal Info -->
-      <div class="text-center">
-          <h1 class="text-3xl font-bold">${document.getElementById("name").value
-    }</h1>
-          <div class="flex flex-wrap justify-center gap-2 mt-2 text-gray-600">
-              ${PersonalInfo()}
-          </div>
-      </div>
-  
-      <!-- Summary -->
-      ${document.getElementById("summary").value
-      ? `
-      <div>
-          <h2 class="text-xl font-bold mb-2 border-b-2 border-gray-300">Summary</h2>
-          <p class="text-gray-700 break-words">${document.getElementById("summary").value
-      }</p>
-      </div>`
-      : ""
-    }
-  
-      <!-- Experience -->
-      <div>
-          <h2 class="text-xl font-bold mb-2 border-b-2 border-gray-300">Experience</h2>
-          ${Array.from(document.querySelectorAll(".experience-entry"))
-      .map((entry) => {
-        const fields = entry.querySelectorAll("input, textarea");
-        return `
-              <div>
-                  <div class="flex justify-between">
-                      <h3 class="font-semibold">${fields[0].value}</h3>
-                      <span class="text-gray-600">${fields[3].value}</span>
-                  </div>
-                  <div class="flex justify-between text-gray-600">
-                      <span>${fields[1].value}</span>
-                      <span>${fields[2].value}</span>
-                  </div>
-                  <ul class="list-disc ml-6 mt-2">
-                      ${fields[4].value
-            .split("\n")
-            .map(
-              (point) => `<li class="text-gray-700">${point}</li>`
-            )
-            .join("")}
-                  </ul>
-              </div>
-            `;
-      })
-      .join("")}
-      </div>
-  
-      <!-- Projects -->
-      <div>
-          <h2 class="text-xl font-bold mb-2 border-b-2 border-gray-300">Projects</h2>
-          ${Array.from(document.querySelectorAll(".project-entry"))
-      .map((entry) => {
-        const fields = entry.querySelectorAll("input, textarea");
-        return `
-              <div>
-                  <div class="flex justify-between">
-                      <h3 class="font-semibold">${fields[0].value}</h3>
-                      <span class="text-gray-600">${fields[1].value}</span>
-                  </div>
-                  <ul class="list-disc ml-6 mt-2">
-                      ${fields[2].value
-            .split("\n")
-            .map(
-              (point) => `<li class="text-gray-700">${point}</li>`
-            )
-            .join("")}
-                  </ul>
-              </div>
-            `;
-      })
-      .join("")}
-      </div>
-  
-      <!-- Education -->
-      <div>
-          <h2 class="text-xl font-bold mb-2 border-b-2 border-gray-300">Education</h2>
-          ${Array.from(document.querySelectorAll(".education-entry"))
-      .map((entry) => {
-        const fields = entry.querySelectorAll("input");
-        return `
-              <div class="flex justify-between">
-                  <div>
-                      <h3 class="font-semibold">${fields[0].value}</h3>
-                      <p class="text-gray-600">${fields[1].value}</p>
-                  </div>
-                  <div class="text-right">
-                      <p class="text-gray-600">${fields[3].value}</p>
-                      ${fields[2].value
-            ? `<p class="text-gray-600">GPA: ${fields[2].value}</p>`
-            : ""
-          }
-                  </div>
-              </div>
-            `;
-      })
-      .join("")}
-      </div>
-  
-      <!-- Skills -->
-      <div>
-          <h2 class="text-xl font-bold mb-2 border-b-2 border-gray-300">Skills</h2>
-          ${Array.from(document.querySelectorAll(".skills-entry"))
-      .map((entry) => {
-        const fields = entry.querySelectorAll("input");
-        return `
-              <div class="flex flex-row">
-                  <p class="font-semibold">${fields[0].value}</p>
-                  <p class="text-gray-600">: ${fields[1].value}</p>
-              </div>
-            `;
-      })
-      .join("")}
-      </div>
-    `;
 }
 
 function PersonalInfo() {
@@ -283,7 +179,7 @@ function deleteBlock(btn, containerId) {
   // Count only the block entries (child elements)
   if (container.children.length > 1) {
     btn.parentElement.remove();
-    updatePreview();
+    // AutoUpdate();
   } else {
     alert("At least one block must remain in this section.");
   }
@@ -319,6 +215,21 @@ function addEducation() {
       </button>
     `;
   document.getElementById("education-fields").appendChild(newEntry);
+  AutoUpdate();
+}
+
+function addCertificate() {
+  const newEntry = document.createElement("div");
+  newEntry.className = "certificate-entry space-y-4 mt-6";
+  newEntry.innerHTML = `
+      <input type="text" placeholder="Certification Name" class="w-full p-2 border rounded" />
+      <input type="text" placeholder="Issuer/Description" class="w-full p-2 border rounded" />
+      <input type="text" placeholder="Certification Date" class="w-full p-2 border rounded" />
+      <button class="delete-btn btn btn-error text-white px-2 py-1 rounded mt-2" data-container="certificate-fields">
+        Delete
+      </button>
+    `;
+  document.getElementById("certificate-fields").appendChild(newEntry);
   AutoUpdate();
 }
 
@@ -370,6 +281,7 @@ function getObject() {
   const website = document.getElementById("website")?.value;
   const website_placeholder = document.getElementById("website_placeholder")?.value;
   const summary = document.getElementById("summary")?.value;
+  const language = document.getElementById("language")?.value;
   const experiences = Array.from(
     document.querySelectorAll(".experience-entry")
   ).map((entry, index) => {
@@ -409,6 +321,15 @@ function getObject() {
     const graduationDate = fields[3].value;
     return { university, degree, gpa, graduationDate };
   });
+  const certificates = Array.from(
+    document.querySelectorAll(".certificate-entry")
+  ).map((entry) => {
+    const fields = entry.querySelectorAll("input");
+    const certName = fields[0].value;
+    const issuer = fields[1].value;
+    const certDate = fields[2].value;
+    return { certName, "issuer/description": issuer, certDate };
+  })
 
   // Get image data from ImageHandler module
   const imageData = getImageData();
@@ -418,6 +339,7 @@ function getObject() {
       name,
       email,
       phone,
+      language,
       location,
       linkedin,
       linkedin_placeholder,
@@ -430,6 +352,7 @@ function getObject() {
       projects,
       skills,
       educations,
+      certificates,
       ...imageData,
     },
     coverLetter: CoverLetter_Obj,
@@ -467,9 +390,11 @@ function generatePDF(obj, save = false) {
   let y = 40;
   const lineHeight = 16;
   var midPage = doc.internal.pageSize.getWidth() / 2;
-  let marginRight = doc.internal.pageSize.getWidth() - 40;
-  let marginBottom = doc.internal.pageSize.getHeight() - 40;
+  let marginRight = doc.internal.pageSize.getWidth() - 30;
+  let marginBottom = doc.internal.pageSize.getHeight() - 30;
   let marginTop = 40;
+  let deliminator = ' | '
+  let deliminatorLength = doc.getStringUnitWidth(deliminator) * 10
   console.log(
     "doc",
     doc.internal.pageSize.getWidth(),
@@ -515,12 +440,18 @@ function generatePDF(obj, save = false) {
   // information string function
   function formatOutput(temp, placeholder, link) {
     if (temp) {
-      if (placeholder) return ` • ${placeholder}`;
-      if (link) return ` • ${link}`;
+      if (placeholder) return `${deliminator}${placeholder}`;
+      if (link) return `${deliminator}${link}`;
     } else {
       if (placeholder) return `${placeholder}`;
       if (link) return `${link}`;
     }
+    return "";
+  }
+
+  function formatOutputNoDot(placeholder, link) {
+    if (placeholder) return `${placeholder}`;
+    if (link) return `${link}`;
     return "";
   }
 
@@ -536,6 +467,7 @@ function generatePDF(obj, save = false) {
   const personalInfo = getPersonalInfoFromObj(obj);
   const personalInfo2 = getPersonalInfo2FromObj(obj);
   let personalInfoY = y + lineHeight + padding;
+
 
 
   if (hasImage()) {
@@ -565,14 +497,14 @@ function generatePDF(obj, save = false) {
       doc.text(content, ImageMarginRight, personalInfoY);
 
       // email
-      content = temp && email ? ` • ${email}` : email ? `${email}` : "";
-      temp += temp && email ? ` • ${email}` : email ? `${email}` : "";
+      content = temp && email ? `${deliminator}${email}` : email ? `${email}` : "";
+      temp += temp && email ? `${deliminator}${email}` : email ? `${email}` : "";
       doc.text(content, ImageMarginRight + tempLength, personalInfoY);
       tempLength = doc.getStringUnitWidth(temp) * 10;
 
       // phone
-      content = temp && phone ? ` • ${phone}` : phone ? `${phone}` : "";
-      temp += temp && phone ? ` • ${phone}` : phone ? `${phone}` : "";
+      content = temp && phone ? `${deliminator}${phone}` : phone ? `${phone}` : "";
+      temp += temp && phone ? `${deliminator}${phone}` : phone ? `${phone}` : "";
       doc.text(content, ImageMarginRight + tempLength, personalInfoY);
       tempLength = doc.getStringUnitWidth(temp) * 10;
 
@@ -592,17 +524,18 @@ function generatePDF(obj, save = false) {
       // github
       let content = formatOutput("", github_placeholder, github);
       let temp = formatOutput("", github_placeholder, github);
+      let rawText = formatOutputNoDot(github_placeholder, github);
       console.log("github", content, "|", temp);
       if (github.includes("https://") || github.includes("www.")) {
         doc.setTextColor("#115bca");
         doc.setDrawColor("#115bca");
         doc.textWithLink(
-          content,
+          rawText,
           ImageMarginRight,
           personalInfoY,
           { url: github }
         );
-        const textWidth = doc.getStringUnitWidth(content) * 10;
+        const textWidth = doc.getStringUnitWidth(rawText) * 10;
         doc.line(
           ImageMarginRight,
           personalInfoY,
@@ -623,20 +556,26 @@ function generatePDF(obj, save = false) {
       // website
       content = formatOutput(temp, website_placeholder, website);
       temp += formatOutput(temp, website_placeholder, website);
+      rawText = formatOutputNoDot(website_placeholder, website);
       if (website.includes("https://") || website.includes("www.")) {
+        doc.text(
+          deliminator,
+          ImageMarginRight + tempLength,
+          personalInfoY
+        )
         doc.setTextColor("#115bca");
         doc.setDrawColor("#115bca");
         doc.textWithLink(
-          content,
-          ImageMarginRight + tempLength,
+          rawText,
+          ImageMarginRight + tempLength + deliminatorLength,
           personalInfoY,
           { url: website }
         );
-        const textWidth = doc.getStringUnitWidth(content) * 10;
+        const textWidth = doc.getStringUnitWidth(rawText) * 10;
         doc.line(
-          ImageMarginRight + tempLength,
+          ImageMarginRight + tempLength + deliminatorLength,
           personalInfoY,
-          ImageMarginRight + tempLength + textWidth,
+          ImageMarginRight + tempLength + deliminatorLength + textWidth,
           personalInfoY
         );
         doc.setTextColor("#000000");
@@ -652,21 +591,27 @@ function generatePDF(obj, save = false) {
       // linkedin
       content = formatOutput(temp, linkedin_placeholder, linkedin);
       temp += formatOutput(temp, linkedin_placeholder, linkedin);
+      rawText = formatOutputNoDot(linkedin_placeholder, linkedin);
       // console.log("linkedin", content, "|", temp);
       if (linkedin.includes("https://") || linkedin.includes("www.")) {
+        doc.text(
+          deliminator,
+          ImageMarginRight + tempLength,
+          personalInfoY
+        )
         doc.setTextColor("#115bca");
         doc.setDrawColor("#115bca");
         doc.textWithLink(
-          content,
-          ImageMarginRight + tempLength,
+          rawText,
+          ImageMarginRight + tempLength + deliminatorLength,
           personalInfoY,
           { url: linkedin }
         );
-        const textWidth = doc.getStringUnitWidth(content) * 10;
+        const textWidth = doc.getStringUnitWidth(rawText) * 10;
         doc.line(
-          ImageMarginRight + tempLength,
+          ImageMarginRight + tempLength + deliminatorLength,
           personalInfoY,
-          ImageMarginRight + tempLength + textWidth,
+          ImageMarginRight + tempLength + deliminatorLength + textWidth,
           personalInfoY
         );
         doc.setTextColor("#000000");
@@ -713,16 +658,16 @@ function generatePDF(obj, save = false) {
       });
 
       // email
-      content = temp && email ? ` • ${email}` : email ? `${email}` : "";
-      temp += temp && email ? ` • ${email}` : email ? `${email}` : "";
+      content = temp && email ? `${deliminator}${email}` : email ? `${email}` : "";
+      temp += temp && email ? `${deliminator}${email}` : email ? `${email}` : "";
       tempLength = doc.getStringUnitWidth(temp) * 10;
       doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, {
         align: "right",
       });
 
       // phone
-      content = temp && phone ? ` • ${phone}` : phone ? `${phone}` : "";
-      temp += temp && phone ? ` • ${phone}` : phone ? `${phone}` : "";
+      content = temp && phone ? `${deliminator}${phone}` : phone ? `${phone}` : "";
+      temp += temp && phone ? `${deliminator}${phone}` : phone ? `${phone}` : "";
       tempLength = doc.getStringUnitWidth(temp) * 10;
       doc.text(content, midPage - (fullLength / 2 - tempLength), personalInfoY, {
         align: "right",
@@ -744,18 +689,20 @@ function generatePDF(obj, save = false) {
       // github
       let content = formatOutput("", github_placeholder, github);
       let temp = formatOutput("", github_placeholder, github);
+      let rawText = formatOutputNoDot(github_placeholder, github);
       let tempLength = doc.getStringUnitWidth(temp) * 10;
+      let rawLength = doc.getStringUnitWidth(rawText) * 10;
       console.log("github", content, "|", temp);
       if (github.includes("https://") || github.includes("www.")) {
         doc.setTextColor("#115bca");
         doc.setDrawColor("#115bca");
         doc.textWithLink(
-          content,
+          rawText,
           midPage - (fullLength / 2 - tempLength),
           personalInfoY,
           { url: github, align: "right" }
         );
-        const textWidth = doc.getStringUnitWidth(content) * 10;
+        const textWidth = doc.getStringUnitWidth(rawText) * 10;
         doc.line(
           midPage - (fullLength / 2 - tempLength) - textWidth,
           personalInfoY,
@@ -775,17 +722,25 @@ function generatePDF(obj, save = false) {
       // website
       content = formatOutput(temp, website_placeholder, website);
       temp += formatOutput(temp, website_placeholder, website);
+      rawText = formatOutputNoDot(website_placeholder, website);
       tempLength = doc.getStringUnitWidth(temp) * 10;
+      rawLength = doc.getStringUnitWidth(rawText) * 10;
       if (website.includes("https://") || website.includes("www.")) {
+        doc.text(
+          deliminator,
+          midPage - (fullLength / 2 - tempLength + rawLength),
+          personalInfoY,
+          { align: "right" }
+        )
         doc.setTextColor("#115bca");
         doc.setDrawColor("#115bca");
         doc.textWithLink(
-          content,
+          rawText,
           midPage - (fullLength / 2 - tempLength),
           personalInfoY,
           { url: website, align: "right" }
         );
-        const textWidth = doc.getStringUnitWidth(content) * 10;
+        const textWidth = doc.getStringUnitWidth(rawText) * 10;
         doc.line(
           midPage - (fullLength / 2 - tempLength) - textWidth,
           personalInfoY,
@@ -805,18 +760,26 @@ function generatePDF(obj, save = false) {
       // linkedin
       content = formatOutput(temp, linkedin_placeholder, linkedin);
       temp += formatOutput(temp, linkedin_placeholder, linkedin);
+      rawText = formatOutputNoDot(linkedin_placeholder, linkedin);
       // console.log("linkedin", content, "|", temp);
       tempLength = doc.getStringUnitWidth(temp) * 10;
+      rawLength = doc.getStringUnitWidth(rawText) * 10;
       if (linkedin.includes("https://") || linkedin.includes("www.")) {
+        doc.text(
+          deliminator,
+          midPage - (fullLength / 2 - tempLength + rawLength),
+          personalInfoY,
+          { align: "right" }
+        )
         doc.setTextColor("#115bca");
         doc.setDrawColor("#115bca");
         doc.textWithLink(
-          content,
+          rawText,
           midPage - (fullLength / 2 - tempLength),
           personalInfoY,
           { url: linkedin, align: "right" }
         );
-        const textWidth = doc.getStringUnitWidth(content) * 10;
+        const textWidth = doc.getStringUnitWidth(rawText) * 10;
         doc.line(
           midPage - (fullLength / 2 - tempLength) - textWidth,
           personalInfoY,
@@ -833,7 +796,7 @@ function generatePDF(obj, save = false) {
           { align: "right" }
         );
 
-      console.log(fullLength - tempLength, fullLength, tempLength);
+      console.log(fullLength - tempLength, fullLength, tempLength, temp);
 
       personalInfoY += lineHeight + padding;
     }
@@ -907,7 +870,7 @@ function generatePDF(obj, save = false) {
         let temp = skill ? `**${skill.trim()}**` : "";
         temp +=
           temp && description
-            ? `, ${description.trim()}`
+            ? `: ${description.trim()}`
             : description
               ? `${description.trim()}`
               : "";
@@ -942,9 +905,9 @@ function generatePDF(obj, save = false) {
         // doc.setFont('NotoSans', 'normal');
         // doc.text(skill ? " : " + description : description, doc.getTextWidth(skill) + marginLeft, y);
 
-        if (index != skillsEntries.length - 1) y += lineHeight;
-        else y += lineHeight + padding;
-        checkAndAddPage();
+        y += lineHeight;
+        if (index != skillsEntries.length - 1 || y < marginBottom)
+          checkAndAddPage();
       });
     }
   }
@@ -962,7 +925,8 @@ function generatePDF(obj, save = false) {
     ) {
       doc.setFont("NotoSans", "bold");
       doc.setFontSize(14);
-      // y += lineHeight;
+      y += padding;
+      checkAndAddPage();
       doc.text("Experience", marginLeft, y);
       doc.line(marginLeft, y + 5, marginRight, y + 5);
       y += lineHeight + padding;
@@ -1011,10 +975,9 @@ function generatePDF(obj, save = false) {
             for (let i = 0; i < bulletLines.length; i++) {
               if (i == 0) doc.text("•      " + bulletLines[i], marginLeft, y);
               else doc.text("        " + bulletLines[i], marginLeft, y);
-              if (index != bullets.length) {
-                y += lineHeight;
+              y += lineHeight;
+              if (index != bullets.length - 1 || y < marginBottom)
                 checkAndAddPage();
-              }
             }
           }
         });
@@ -1033,6 +996,7 @@ function generatePDF(obj, save = false) {
       doc.setFont("NotoSans", "bold");
       doc.setFontSize(14);
       y += padding;
+      checkAndAddPage();
       doc.text("Projects", marginLeft, y);
       doc.line(marginLeft, y + 5, marginRight, y + 5);
       y += lineHeight + padding;
@@ -1114,10 +1078,9 @@ function generatePDF(obj, save = false) {
             for (let i = 0; i < bulletLines.length; i++) {
               if (i == 0) doc.text("•      " + bulletLines[i], marginLeft, y);
               else doc.text("        " + bulletLines[i], marginLeft, y);
-              if (index != bullets.length) {
-                y += lineHeight;
+              y += lineHeight;
+              if (index != bullets.length - 1 || y < marginBottom)
                 checkAndAddPage();
-              }
             }
           }
         });
@@ -1143,6 +1106,7 @@ function generatePDF(obj, save = false) {
       doc.setFont("NotoSans", "bold");
       doc.setFontSize(14);
       y += padding;
+      checkAndAddPage();
       doc.text("Education", marginLeft, y);
       doc.line(marginLeft, y + 5, marginRight, y + 5);
       y += lineHeight + padding;
@@ -1184,9 +1148,70 @@ function generatePDF(obj, save = false) {
         temp += temp && gpa ? ` - ${gpa.trim()}` : gpa ? `${gpa.trim()}` : "";
         doc.text(temp, marginLeft, y);
 
-        if (index != educationEntries.length - 1) {
+        y += lineHeight;
+        if (index != educationEntries.length - 1 || y < marginBottom)
+          checkAndAddPage();
+      });
+    }
+  }
+
+  // Certifications Section
+  const certificateEntries = obj.certificates;
+  if (certificateEntries.length) {
+    if (
+      obj.certificates[0].certName ||
+      obj.certificates[0]["issuer/description"]
+    ) {
+      doc.setFont("NotoSans", "bold");
+      doc.setFontSize(14);
+      y += padding;
+      checkAndAddPage();
+      doc.text("Certificates", marginLeft, y);
+      doc.line(marginLeft, y + 5, marginRight, y + 5);
+      y += lineHeight + padding;
+      checkAndAddPage();
+
+      certificateEntries.forEach((entry, index) => {
+        // const fields = entry.querySelectorAll('input');
+        // const university = fields[0].value;
+        // const degree = fields[1].value;
+        // const gpa = fields[2].value;
+        // const graduationDate = fields[3].value;
+
+        const certName = entry.certName;
+        const issuer = entry["issuer/description"];
+        const certDate = entry.certDate;
+
+        doc.setFontSize(10);
+        let temp = certName ? `**${certName.trim()}**` : "";
+        // temp += temp && degree ? `| ${degree.trim()}` : degree ? `${degree.trim()}` : '';
+        // temp += temp && gpa ? ` - GPA: ${gpa.trim()}` : gpa ? `GPA: ${gpa.trim()}` : '';
+        let startX = marginLeft;
+        temp.split("**").forEach((line, index) => {
+          doc.setFont("NotoSans", "bold");
+          if (index % 2 === 0) {
+            doc.setFont("NotoSans", "normal");
+          }
+          doc.text(line, startX, y);
+          startX = startX + doc.getStringUnitWidth(line) * 10;
+        });
+
+        doc.setFont("NotoSans", "normal");
+        doc.text(certDate, marginRight, y, { align: "right" });
+        if (issuer || index != certificateEntries.length - 1) {
           y += lineHeight;
           checkAndAddPage();
+        }
+
+        // issuer/description
+        if (issuer) {
+          temp = issuer ? `${issuer.trim()}` : "";
+          doc.text(temp, marginLeft, y);
+
+          if (index != certificateEntries.length - 1) {
+            y += lineHeight;
+            checkAndAddPage();
+          }
         }
       });
     }
@@ -1233,7 +1258,7 @@ function loadHtml(obj) {
     if (index != 0) entry.remove();
   });
 
-  const skills = obj.skills;
+  const skills = obj.skills || [];
   skills.map((skill, index) => {
     if (index == 0) {
       const inputs = document
@@ -1261,7 +1286,7 @@ function loadHtml(obj) {
     if (index != 0) entry.remove();
   });
 
-  const exps = obj.experiences;
+  const exps = obj.experiences || [];
   exps.map((exp, index) => {
     if (index == 0) {
       const inputs = document
@@ -1295,7 +1320,7 @@ function loadHtml(obj) {
     if (index != 0) entry.remove();
   });
 
-  const projs = obj.projects;
+  const projs = obj.projects || [];
   projs.map((proj, index) => {
     if (index == 0) {
       const inputs = document
@@ -1319,13 +1344,43 @@ function loadHtml(obj) {
     }
   });
 
+  // Delete all existing certificate entries
+  const certificateEntries = document.querySelectorAll(".certificate-entry");
+  certificateEntries.forEach((entry, index) => {
+    if (index != 0) entry.remove();
+  });
+
+  const certs = obj.certificates || [];
+  certs.map((cert, index) => {
+    if (index == 0) {
+      const inputs = document
+        .querySelector(".certificate-entry")
+        .querySelectorAll("input, textarea");
+      inputs[0].value = cert.certName;
+      inputs[1].value = cert["issuer/description"];
+      inputs[2].value = cert.certDate;
+    } else {
+      const newEntry = document.createElement("div");
+      newEntry.className = "certificate-entry space-y-4 mt-6";
+      newEntry.innerHTML = `
+      <input type="text" placeholder="Certification Name" class="w-full p-2 border rounded" value="${cert.certName}">
+      <input type="text" placeholder="Issuer/Description" class="w-full p-2 border rounded" value="${cert['issuer/description']}">
+      <input type="text" placeholder="Certification Date" class="w-full p-2 border rounded" value="${cert.certDate}">
+      <button class="delete-btn btn btn-error text-white px-2 py-1 rounded mt-2" data-container="certificate-fields">
+        Delete
+      </button>
+    `;
+      document.getElementById("certificate-fields").appendChild(newEntry);
+    }
+  });
+
   // Delete all existing education entries
   const educationEntries = document.querySelectorAll(".education-entry");
   educationEntries.forEach((entry, index) => {
     if (index != 0) entry.remove();
   });
 
-  const edus = obj.educations;
+  const edus = obj.educations || [];
   edus.map((edu, index) => {
     if (index == 0) {
       const inputs = document
@@ -1395,12 +1450,14 @@ function profileEventListener() {
     const profile_idx = parseInt(document.getElementById("profile-select").value);
     console.log("profile_idx: ", profile_idx);
     const obj = getObject();
+    obj["cv"]['language'] = languageSelect.value;
     const temp_obj = mapObject_profile(obj);
     // console.log(temp_obj);
     saveProfileToStorage(profile_idx, temp_obj);
   });
   document.getElementById("load-profile").addEventListener("click", () => {
-    const profile_idx = parseInt(document.getElementById("profile-select").value);
+    let profile_idx = parseInt(document.getElementById("profile-select").value);
+    profile_idx = profile_idx < 0 ? 0 : profile_idx;
     const obj_cv = getObject();
     const obj_profile = loadProfile(profile_idx);
     console.log(obj_cv, obj_profile);
@@ -1417,7 +1474,9 @@ profileEventListener();
 // Initialize all event listeners for buttons
 function initializeEventListeners() {
   // Main action buttons
-  document.getElementById("update-btn")?.addEventListener("click", AutoUpdate);
+  document
+    .getElementById("update-btn")
+    ?.addEventListener("click", AutoUpdate);
   document
     .getElementById("download-pdf-btn")
     ?.addEventListener("click", downloadPDF);
@@ -1429,7 +1488,9 @@ function initializeEventListeners() {
     ?.addEventListener("click", generateAI);
 
   // Add section buttons
-  document.getElementById("add-skill-btn")?.addEventListener("click", addSkill);
+  document
+    .getElementById("add-skill-btn")
+    ?.addEventListener("click", addSkill);
   document
     .getElementById("add-experience-btn")
     ?.addEventListener("click", addExperience);
@@ -1439,6 +1500,9 @@ function initializeEventListeners() {
   document
     .getElementById("add-education-btn")
     ?.addEventListener("click", addEducation);
+  document
+    .getElementById("add-certificate-btn")
+    ?.addEventListener("click", addCertificate);
 
   // Delete buttons event delegation
   document.body.addEventListener("click", function (e) {
@@ -1452,193 +1516,24 @@ function initializeEventListeners() {
 // Initialize event listeners when DOM is loaded
 initializeEventListeners();
 
-const INSprompt = `
+let INSprompt = "";
 
-1. Goal Statement
-I need you to generate both a tailored CV and a cover letter in response to a job description and (optional) user-provided information. The output must:
-
-- Be in JSON format matching the schema below
-- Use natural, real-life phrasing and tone appropriate for professional job applications
-- In the summary/overview section, you must NOT use generic phrases such as “aspiring”, “passionate”, “motivated”, or any similar non-specific terms.
-- Translate all fields into the specified language—except if the specified language is English (case-insensitive), in which case the output must remain fully in English
-
-The cover letter should:
-- Be role-specific and company-aware
-- Highlight relevant experience, skills, and achievements aligned with the job description
-- Follow standard cover letter structure: header, greeting, intro, body, closing, and sign-off
-- Sound authentic, enthusiastic, and tailored to the job
-
-2. Return Format
-Return a single JSON object with the following structure. Every text field must be in the requested language (unless the language is English—then keep in English):
-
-{
-  "cv": {
-    "name": "",
-    "email": "",
-    "phone": "",
-    "location": "",
-    "linkedin": "",
-    "github": "",
-    "website": "",
-    "summary": "",
-    "experiences": [
-      {
-        "position": "",
-        "company": "",
-        "location": "",
-        "dates": "",
-        "bullets": []
-      }
-    ],
-    "educations": [
-      {
-        "university": "",
-        "degree": "",
-        "gpa": "",
-        "graduationDate": ""
-      }
-    ],
-    "projects": [
-      {
-        "projectName": "",
-        "projectLink": "",
-        "bullets": []
-      }
-    ],
-    "skills": [
-      {
-        "skill": "",
-        "description": ""
-      }
-    ]
-  },
-  "coverLetter": {
-    "header": {
-      "name": "",
-      "email": "",
-      "phone": "",
-      "location": "",
-      "date": "",
-      "recipientName": "",
-      "recipientTitle": "",
-      "companyName": "",
-      "companyAddress": ""
-    },
-    "greeting": "",
-    "openingParagraph": "",
-    "bodyParagraphs": [],
-    "closingParagraph": "",
-    "signOff": ""
-  }
+try {
+  INSprompt = await fetch("instruction.txt").then((response) =>
+    response.text()
+  );
+  console.log("fetch INSprompt successfully");
+}
+catch (e) {
+  console.warn("fetch INSprompt failed");
+  console.warn(e)
 }
 
-3. Context and Guidelines:
-
-For the following fields, if the user does not provide data, leave them as empty strings:
-- name
-- email
-- location
-- linkedin
-- github
-- website
-- phone
-
-Summary Section:
-- Only include this section if you have relevant information that directly relates to the job description.
-- Do not use generic or boilerplate language (e.g., “passionate”, "aspiring").
-  Bad Example 1: "Motivated software developer with experience in AI integration, web automation, and data scraping."
-  Bad Example 2: "Versatile software developer with a strong background in AI integration, automation, and data-driven applications." 
-- Provide a concise summary that highlights your skills or background in direct relation to the job.
-  Good Example 1: "Software Engineer with X years of full stack web development experience specializing in Ruby on Rails and PostgreSQL. Domain expert in e-commerce and payments field as a result of working at multiple e-commerce companies."
-  Good Example 2: "Senior Software Engineer @ Google with 5 years of experience leading teams."
-- Ensure that keywords or technologies mentioned in the job description are integrated appropriately.
-
-Experiences Section:
-- Each experience should show position, company, location, employment dates, and bullet points for key achievements.
-- Start each bullet point with a past-tense action verb.
-- Present timeline and technologies clearly.
-
-Projects:
-- Include projects that are relevant to the job.
-- Only list real and significant projects.
-- Avoid trivial or tutorial-based ones.
-- Include demo links or GitHub repos if applicable.
-
-Skills:
-- Highlight only relevant skills for the job.
-- Do not list every technology ever used.
-- Format clearly, and group related skills where applicable.
-
-Educations:
-- List educational background clearly.
-- Omit GPA if weak or not provided.
-- Optionally include notable academic achievements related to the role.
-
-Language:
-- Generate the CV and cover letter in the language specified in the "language" field.
-- If the language is not specified, default to English.
-- If the specified language is "english", DO NOT translate—keep the content fully in English.
-
-4. Warnings & Requirements
-
-CV:
-- Use strong, past-tense action verbs in experience bullets.
-- Do not use generic or boilerplate language (e.g., “passionate”, "aspiring") in the summary.
-- Do not include GPA unless it's provided and strong.
-- Only include real, significant projects. No tutorial or toy examples.
-- Skills must be grouped clearly and described briefly.
-- Use realistic and results-focused phrasing.
-- Integrate keywords from the job description naturally.
-
-Cover Letter:
-- Keep tone confident, clear, and job-specific.
-- Avoid repeating the CV. Expand and add personality.
-- Structure the letter with: Header, Greeting, Opening, Body, Closing, Sign-off.
-- Personalize the greeting when possible.
-- Do not use generic phrases like "To whom it may concern."
-- Keep the letter under 350 words.
-- If the specified language is English, do not translate the cover letter or CV. Otherwise, ensure the entire cover letter and CV are translated into the target language fluently.
-
-5. Translation Guidance
-
-If the input language is English, do not translate any output. Leave all content in English.
-If the input language is anything other than English, translate all fields fully and fluently.
-Use natural, native-level phrasing. Do not translate literally or mechanically.
-
-Examples of Good vs. Bad Vietnamese Translations:
-
-Good summary: “Kỹ sư phần mềm với 6 năm kinh nghiệm full-stack chuyên về Ruby on Rails và hệ thống thương mại điện tử.”
-Bad summary: “Lập trình viên phần mềm đam mê tìm kiếm thử thách mới.”
-
-Good university name: “Đại học Sư phạm Kỹ thuật Thành phố Hồ Chí Minh”
-Bad university name: “Đại học Công nghệ và Giáo dục Hồ Chí Minh”
-
-Good greeting: “Kính gửi Nhà tuyển dụng,”
-Bad greeting: “Kính gửi Người tuyển dụng,” or “Dear Người nhận,”
-
-6. Input Format
-
-You will receive input in the following format:
-
-{
-  "Job-description": "<full job posting>",
-  "user-information": "<optional CV or cover letter content>",
-  "translate-to-language": "<language code, e.g., 'english', 'vietnamese'>",
-  "today": "<date string>"
-}
-
-Instructions:
-- Translate all fields based on the specified language.
-- If language is English, output all content in English without translation.
-- If input data is limited, you may infer or enrich missing content realistically.
-- Prioritize clarity, keyword alignment, and professional fluency.
-
-`;
 
 async function generateAI() {
   const JD = document.getElementById("JD").value;
   const yourself = document.getElementById("yourself").value;
-  const language = document.getElementById("language").value;
+  const language = languageSelect.value;
   const error = document.querySelector("#AI-error");
   const aiLoader = document.querySelector("#AiLoader");
   const MODEL_ID = "gemini-flash-lite-latest"
@@ -1812,6 +1707,28 @@ async function generateAI() {
                           "description"
                         ]
                       }
+                    },
+                    "certificates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "certName": {
+                            "type": "string"
+                          },
+                          "issuer/description": {
+                            "type": "string"
+                          },
+                          "certDate": {
+                            "type": "string"
+                          }
+                        },
+                        "propertyOrdering": [
+                          "certName",
+                          "issuer/description",
+                          "certDate"
+                        ]
+                      }
                     }
                   },
                   "propertyOrdering": [
@@ -1826,7 +1743,8 @@ async function generateAI() {
                     "experiences",
                     "educations",
                     "projects",
-                    "skills"
+                    "skills",
+                    "certificates"
                   ]
                 },
                 "coverLetter": {

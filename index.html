@@ -35,7 +35,11 @@
             <option>Korean</option>
             <option>Chinese</option>
             <option>Spanish</option>
+            <option>Portuguese</option>
             <option>French</option>
+            <option>German</option>
+            <option>Russian</option>
+            <option>Italian</option>
           </select>
         </div>
 
@@ -84,16 +88,11 @@
 
               <div class="space-y-2">
                 <fieldset class="fieldset">
-                  <legend class="fieldset-legend">Save a Personal Profile</legend>
+                  <legend class="text-[14px]">Save a Personal Profile</legend>
                   <select class="select" id="profile-select">
-                    <option disabled selected value="0">Pick a saved profile</option>
-                    <option value="0">1</option>
-                    <option value="1">2</option>
-                    <option value="2">3</option>
-                    <option value="3">4</option>
-                    <option value="4">5</option>
+                    <option disabled selected value="-1">Pick a saved profile</option>
                   </select>
-                  <span class="label" id="profile-label">We just load the Personal Profile -> Do not worry</span>
+                  <span class="label" id="profile-label">We just load the Personal Profile -> The rest below will be the same</span>
                 </fieldset>
                 <div class="flex flex-row gap-4 overflow-x-auto">
                   <button class="btn btn-soft btn-primary" id="save-profile">Save Personal Profile</button>
@@ -179,6 +178,22 @@
             <button id="add-education-btn" class="mt-4 btn btn-info text-white px-4 py-2 rounded">Add Education</button>
           </section>
 
+          <!-- Certifications -->
+          <section class="mb-8">
+            <h3 class="text-xl font-semibold mb-4">Certifications</h3>
+            <div id="certificate-fields">
+              <div class="certificate-entry space-y-4">
+                <input type="text" placeholder="Certification Name" class="w-full p-2 border rounded" />
+                <input type="text" placeholder="Issuer/Description" class="w-full p-2 border rounded" />
+                <input type="text" placeholder="Certification Date" class="w-full p-2 border rounded" />
+                <button class="delete-btn btn btn-error text-white px-2 py-1 rounded mt-2" data-container="certificate-fields">
+                  Delete
+                </button>
+              </div>
+            </div>
+            <button id="add-certificate-btn" class="mt-4 btn btn-info text-white px-4 py-2 rounded">Add Certification</button>
+          </section>
+
         </div>
 
         <div id="ai-editor" class="flex-1 overflow-auto px-5 hidden">
@@ -186,10 +201,16 @@
           <h3 class="text-xl font-semibold mb-2">Gemini API Key</h3>
           <div class="mb-4">
             <div class="flex flex-row gap-2">
-              <input type="text" id="api-key" placeholder="Enter your Gemini API Key" class="w-full p-2 border rounded" />
+              <!-- <div class="join w-full">
+
+              </div> -->
+              <label class="input w-full">
+                <input type="text" id="api-key" placeholder="Enter your Gemini API Key" />
+                <div id="api-eye-div" class="h-full flex items-center cursor-pointer"></div>
+              </label>
               <button id="save-api-key" class="btn btn-info text-white px-4 py-2 rounded">Save API Key</button>
             </div>
-            <span class="label text-sm" id="api-label">We do not store your API key anywhere, it is only used to call the Gemini API</span>
+            <span class="label text-sm" id="api-label">Your API key is stored in your browser's local storage not the cloud! </span>
           </div>
 
           <h3 class="text-xl font-semibold mb-2">Job Description</h3>
@@ -246,15 +267,15 @@
 
     
 
-  <script src="./script/EBGaramond-Bold-normal.js"></script>
-  <script src="./script/EBGaramond-Regular-normal.js"></script>
+  <script src="./fonts/EBGaramond-Bold-normal.js"></script>
+  <script src="./fonts/EBGaramond-Regular-normal.js"></script>
+  <script src="./fonts/NotoSansJP-Bold-normal.js"></script>
+  <script src="./fonts/NotoSansJP-Regular-normal.js"></script>
+  <script src="./fonts/NotoSansKR-Bold-normal.js"></script>
+  <script src="./fonts/NotoSansKR-Regular-normal.js"></script>
+  <script src="./fonts/NotoSansSC-Regular-normal.js"></script>
+  <script src="./fonts/NotoSansSC-Bold-normal.js"></script>
   <script src="./script/main.js" type="module"></script>
-  <script src="./script/NotoSansJP-Bold-normal.js"></script>
-  <script src="./script/NotoSansJP-Regular-normal.js"></script>
-  <script src="./script/NotoSansKR-Bold-normal.js"></script>
-  <script src="./script/NotoSansKR-Regular-normal.js"></script>
-  <script src="./script/NotoSansSC-Regular-normal.js"></script>
-  <script src="./script/NotoSansSC-Bold-normal.js"></script>
 </body>
 
 </html>
