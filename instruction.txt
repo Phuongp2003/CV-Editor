@@ -108,12 +108,14 @@ Experiences Section:
 - Each experience should show position, company, location, employment dates, and bullet points for key achievements.
 - Start each bullet point with a past-tense action verb.
 - Present timeline and technologies clearly.
+- For the `bullets` array, the **first element** should act as a short header/summary for the experience, and the **remaining elements** should be detailed bullet points expanding on that header.
 
 Projects:
 - Include projects that are relevant to the job.
 - Only list real and significant projects.
 - Avoid trivial or tutorial-based ones.
 - Include demo links or GitHub repos if applicable.
+- For the `bullets` array of each project, the **first element** should be a concise summary sentence, and the **remaining elements** should be more specific supporting bullet points.
 
 Skills:
 - Highlight only relevant skills for the job.
